@@ -1,9 +1,9 @@
 class LammpstrjParser:
     def __init__(self, filename):
-        self._filename = filename
+        self.filename = filename
 
     def iter_timesteps(self, fields_of_interest=('id', 'x', 'y', 'z')):
-        with open(self._filename, 'r') as file:
+        with open(self.filename, 'r') as file:
             while True:
                 line = file.readline()
                 if not line:
