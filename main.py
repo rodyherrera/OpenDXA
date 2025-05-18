@@ -1,7 +1,7 @@
 from core.lammpstrj_parser import LammpstrjParser
 from core.hybrid_neighbor_finder import HybridNeighborFinder
 from core.ptm_local_classifier import PTMLocalClassifier, get_ptm_templates
-import numpy as np
+from core.surface_filter import SurfaceFilter
 
 parser = LammpstrjParser('./nanoparticle.lammpstrj')
 
@@ -34,7 +34,24 @@ for data in parser.iter_timesteps():
     )
 
     types, quaternions = classifier.classify()
-    print('Local structure types:', types[:10])
-    print('Orientation quaternions:', quaternions[:10])
+    surface_filter = SurfaceFilter(min_neighbors=12)
+    interior_idxs = surface_filter.filter_indices(neighbors, ptm_types=types)
 
+    print('Interior atom count:', len(interior_idxs))
+
+    filtered_data = surface_filter.filter_data(positions, ids, neighbors, ptm_types=types, quaternions=quaternions)
+
+    print('\n--- Filtered Data ---')
+    print('Filtered positions (first 5):')
+    print(filtered_data['positions'][:5])
+    print('\nFiltered IDs:')
+    print(filtered_data['ids'])
+    print('\nFiltered neighbor lists (first 5):')
+    for i in range(min(5, len(filtered_data['ids']))):
+        print(f'  atom {filtered_data["ids"][i]} →', filtered_data['neighbors'][i])
+    print('\nFiltered PTM types:')
+    print(filtered_data['ptm_types'])
+    print('\nFiltered orientation quaternions (first 5):')
+    print(filtered_data['quaternions'][:5])
+    
     break
